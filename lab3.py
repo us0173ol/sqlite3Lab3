@@ -23,8 +23,8 @@ def add_record():
 
     # Parameters. Use a ? as a placeholder for data that will be filled in
     # Provide data as a second argument to .execute, as a tuple of values
-    cur.execute('insert into recordHolders values (?, ?, ?)', (RecordHolder, Country, NumberOfCatches))
-
+    cur.execute('insert into recordHolders values (?, ?, ?)', (RecordHolder, Country, NumberOfCatches,))
+    db.commit()
 def display_table():
     db = sqlite3.connect('chainsaw_juggling_db') # Creates or opens database file
     cur = db.cursor()
@@ -48,21 +48,21 @@ def search(search_for):
 
     if search_for == '1':
         name = input('Enter the name you would like to search for: ')
-        cur.execute('select * from recordHolders where name ='+ name)
+        cur.execute("select * from recordHolders where RecordHolder like '%"+name+"%'")
 
         for row in cur:
             print(row)
 
     elif search_for == '2':
         country = input('Enter the country you would like to search for: ')
-        cur.execute('select * from recordHolders where value =', country)
+        cur.execute("select * from recordHolders where Country like '%"+country+"%'")
 
         for row in cur:
             print(row)
 
     elif search_for == '3':
-        numberOfCatches = int(input('Enter the country you would like to search for: '))
-        cur.execute('select * from recordHolders where value =', numberOfCatches)
+        numberOfCatches = int(input('Enter the number of catches you would like to search for: '))
+        cur.execute('select * from recordHolders where NumberOfCatches = ?', (numberOfCatches,))
 
         for row in cur:
             print(row)
@@ -92,6 +92,59 @@ def main():
         choice = display_choice_options()
         handle_choice(choice)
 
+def update_decision():
+    db = sqlite3.connect('chainsaw_juggling_db')
+    cur = db.cursor()
+    cur.execute('select * from recordHolders')
+
+    for row in cur:
+        print(row)
+
+    record = input('Enter the name of the record holder you would like to edit: ')
+    cur.execute("select * from recordHolders where RecordHolder like '%"+record+"%'")
+
+    for row in cur:
+        print(row)
+
+    print('''
+            1. Edit Name
+            2. Edit Country
+            3. Edit Number of Catches
+        ''')
+
+    update_choice = input("Enter Selection: ")
+
+
+    if update_choice == '1':
+        new_name = input('Enter new name: ')
+        cur.execute("update recordHolders set RecordHolder ='"+new_name+"'where RecordHolder ='"+record+"'")
+        db.commit()
+        print('Update Successful')
+
+    elif update_choice == '2':
+        new_country = input('Enter new country: ')
+        cur.execute("update recordHolders set Country ='"+new_country+"'where RecordHolder ='"+record+"'")
+        db.commit()
+        print('Update Successful')
+
+    elif update_choice == '3':
+        new_numberOfCatches = input('Enter new number of catches: ')
+        cur.execute("update recordHolders set NumberOfCatches ='"+new_numberOfCatches+"'where RecordHolder ='"+record+"'")
+        db.commit()
+        print('Update Successful')
+    else:
+        print('Make valid selection ')
+
+def delete_record():
+    db = sqlite3.connect('chainsaw_juggling_db')
+    cur = db.cursor()
+    cur.execute('select * from recordHolders')
+
+    delete = input('Enter the name of the record holder you would like to delete: ')
+    cur.execute("delete from recordHolders where RecordHolder ='"+delete+"'")
+    db.commit()
+    print(delete, 'was successfuly deleted from database ')
+
 def handle_choice(choice):
 
 
@@ -106,7 +159,7 @@ def handle_choice(choice):
             search(search_for)
 
         elif choice == '4':
-            update_record()
+            update_decision()
 
         elif choice == '5':
             delete_record()
